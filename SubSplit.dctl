@@ -18,7 +18,7 @@ DEFINE_UI_PARAMS(highlight_cyan, Highlight Cyan, DCTLUI_SLIDER_FLOAT, 0.0, -0.25
 DEFINE_UI_PARAMS(highlight_magenta, Highlight Magenta, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
 DEFINE_UI_PARAMS(highlight_yellow, Highlight Yellow, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
 
-DEFINE_UI_PARAMS(preserve_luminance, Preserve Luminance, DCTLUI_CHECK_BOX, 1)
+DEFINE_UI_PARAMS(preserve_luminance, Preserve Luminance, DCTLUI_SLIDER_FLOAT, 0.8, 0.0, 1.0, 0.01)
 DEFINE_UI_PARAMS(opt_showcurve, Show Curve, DCTLUI_CHECK_BOX, 0)
 DEFINE_UI_PARAMS(visualize, Show Pivot, DCTLUI_CHECK_BOX, 0)
 DEFINE_UI_PARAMS(opt_showramp, Show Ramp, DCTLUI_CHECK_BOX, 0)
@@ -202,11 +202,11 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
     // Apply the subtractive color adjustments
     rgb = apply_subtractive_adjustment(rgb, combined_rgb_adj, combined_cmy_adj);
     
-    // Apply luminance compensation if enabled
-    if (preserve_luminance) {
+    // Apply luminance compensation, scaled by preserve_luminance strength
+    if (preserve_luminance > 0.0f) {
         float subtractive_impact = calculate_subtractive_impact(combined_rgb_adj, combined_cmy_adj);
         float compensation = calculate_luminance_compensation(subtractive_impact);
-        rgb *= compensation;
+        rgb *= 1.0f + (compensation - 1.0f) * preserve_luminance;
     }
     
     // Calculate adjustments for the ramp
@@ -224,10 +224,10 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
     
     ramp = apply_subtractive_adjustment(ramp, ramp_combined_rgb_adj, ramp_combined_cmy_adj);
     
-    if (preserve_luminance) {
+    if (preserve_luminance > 0.0f) {
         float ramp_subtractive_impact = calculate_subtractive_impact(ramp_combined_rgb_adj, ramp_combined_cmy_adj);
         float ramp_compensation = calculate_luminance_compensation(ramp_subtractive_impact);
-        ramp *= ramp_compensation;
+        ramp *= 1.0f + (ramp_compensation - 1.0f) * preserve_luminance;
     }
 
     // Add curve visualization overlay if enabled
