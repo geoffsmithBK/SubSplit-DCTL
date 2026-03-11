@@ -21,6 +21,7 @@ DEFINE_UI_PARAMS(highlight_yellow, ☀️ Highlight Yellow, DCTLUI_SLIDER_FLOAT,
 DEFINE_UI_PARAMS(opt_showcurve, 🎢 Show Curve, DCTLUI_CHECK_BOX, 2)
 DEFINE_UI_PARAMS(preserve_luminance, 💡 Preserve Luminance, DCTLUI_CHECK_BOX, 1)
 DEFINE_UI_PARAMS(visualize, 📊 Show Pivot/Trans, DCTLUI_CHECK_BOX, 0)
+DEFINE_UI_PARAMS(opt_showramp, ☑️ Show Ramp, DCTLUI_CHECK_BOX, 0)
 
 __DEVICE__ float smooth_step(float edge0, float edge1, float x) {
     float t = _clampf((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
@@ -226,6 +227,10 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         float ramp_subtractive_impact = calculate_subtractive_impact(ramp_combined_rgb_adj, ramp_combined_cmy_adj);
         float ramp_compensation = calculate_luminance_compensation(ramp_subtractive_impact);
         ramp *= ramp_compensation;
+    }
+
+    if (opt_showramp == 1) {
+        rgb = ramp;
     }
 
     // Add curve visualization overlay if enabled
