@@ -4,23 +4,25 @@
 DEFINE_UI_PARAMS(pivot, Pivot Point, DCTLUI_SLIDER_FLOAT, 0.336, 0.0, 1.0, 0.001)
 DEFINE_UI_PARAMS(transition, Transition Softness, DCTLUI_SLIDER_FLOAT, 0.2, 0.01, 1.0, 0.001)
 
-DEFINE_UI_PARAMS(shadow_red, 🌑 Shadow Red, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(shadow_green, 🌑 Shadow Green, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(shadow_blue, 🌑 Shadow Blue, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(shadow_cyan, 🌑 Shadow Cyan, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(shadow_magenta, 🌑 Shadow Magenta, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(shadow_yellow, 🌑 Shadow Yellow, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(shadow_red, Shadow Red, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(shadow_green, Shadow Green, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(shadow_blue, Shadow Blue, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(shadow_cyan, Shadow Cyan, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(shadow_magenta, Shadow Magenta, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(shadow_yellow, Shadow Yellow, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
 
-DEFINE_UI_PARAMS(highlight_red, ☀️ Highlight Red, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(highlight_green, ☀️ Highlight Green, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(highlight_blue, ☀️ Highlight Blue, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(highlight_cyan, ☀️ Highlight Cyan, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(highlight_magenta, ☀️ Highlight Magenta, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
-DEFINE_UI_PARAMS(highlight_yellow, ☀️ Highlight Yellow, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(highlight_red, Highlight Red, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(highlight_green, Highlight Green, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(highlight_blue, Highlight Blue, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(highlight_cyan, Highlight Cyan, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(highlight_magenta, Highlight Magenta, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
+DEFINE_UI_PARAMS(highlight_yellow, Highlight Yellow, DCTLUI_SLIDER_FLOAT, 0.0, -0.25, 0.25, 0.001)
 
-DEFINE_UI_PARAMS(opt_showcurve, 🎢 Show Curve, DCTLUI_CHECK_BOX, 2)
-DEFINE_UI_PARAMS(preserve_luminance, 💡 Preserve Luminance, DCTLUI_CHECK_BOX, 1)
-DEFINE_UI_PARAMS(visualize, 📊 Show Pivot/Trans, DCTLUI_CHECK_BOX, 0)
+DEFINE_UI_PARAMS(preserve_luminance, Preserve Luminance, DCTLUI_CHECK_BOX, 1)
+DEFINE_UI_PARAMS(opt_showcurve, Show Curve, DCTLUI_CHECK_BOX, 0)
+DEFINE_UI_PARAMS(visualize, Show Pivot, DCTLUI_CHECK_BOX, 0)
+DEFINE_UI_PARAMS(opt_showramp, Show Ramp, DCTLUI_CHECK_BOX, 0)
+DEFINE_UI_PARAMS(ramp_pos, Ramp Position, DCTLUI_SLIDER_FLOAT, 0.0, 0.0, 0.85, 0.01)
 
 __DEVICE__ float smooth_step(float edge0, float edge1, float x) {
     float t = _clampf((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
@@ -170,7 +172,7 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
     float height = (float)p_Height;
     float X = (float)p_X;
     float Y = height - (float)p_Y;
-    float3 ramp = {X / width, X / width, X / width};
+    float3 ramp = make_float3(X / width, X / width, X / width);
     
     // Get luminance using DaVinci Wide Gamut coefficients
     float luma = luminance_davinci_wide_gamut(rgb);
@@ -241,6 +243,15 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         rgb.x = overlayR == 0.0f ? rgb.x : overlayR;
         rgb.y = overlayG == 0.0f ? rgb.y : overlayG;
         rgb.z = overlayB == 0.0f ? rgb.z : overlayB;
+    }
+
+    if (opt_showramp == 1) {
+        float y_norm = 1.0f - (float)p_Y / (float)p_Height;
+        if (y_norm >= ramp_pos && y_norm <= ramp_pos + 0.15f) {
+            rgb.x = ramp.x;
+            rgb.y = ramp.y;
+            rgb.z = ramp.z;
+        }
     }
 
     return rgb;
