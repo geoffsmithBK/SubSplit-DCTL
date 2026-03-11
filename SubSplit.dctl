@@ -229,10 +229,6 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         ramp *= ramp_compensation;
     }
 
-    if (opt_showramp == 1) {
-        rgb = ramp;
-    }
-
     // Add curve visualization overlay if enabled
     if (visualize) {
         rgb = draw_curve_overlay(rgb, p_X, p_Y, p_Width, p_Height, pivot, transition);
@@ -243,10 +239,14 @@ __DEVICE__ float3 transform(int p_Width, int p_Height, int p_X, int p_Y, float p
         float overlayG = ramp.y >= (Y - 5.0f) / height && ramp.y <= (Y + 5.0f) / height ? 1.0f : 0.0f;
         float overlayB = ramp.z >= (Y - 5.0f) / height && ramp.z <= (Y + 5.0f) / height ? 1.0f : 0.0f;
 
-        rgb.x = overlayR == 0.0f ? rgb.x : overlayR;
-        rgb.y = overlayG == 0.0f ? rgb.y : overlayG;
-        rgb.z = overlayB == 0.0f ? rgb.z : overlayB;
-    }
+    rgb.x = overlayR == 0.0f ? rgb.x : overlayR;
+    rgb.y = overlayG == 0.0f ? rgb.y : overlayG;
+    rgb.z = overlayB == 0.0f ? rgb.z : overlayB;
+}
 
-    return rgb;
+if (opt_showramp == 1) {
+    rgb = ramp;
+}
+
+return rgb;
 }
